@@ -1,0 +1,24 @@
+---
+- hosts: all
+  become: true
+  pre_tasks:
+    - name: Updates
+      apt: upgrade=yes update_cache=yes cache_valid_time=86400 # a day
+  roles:
+    - role: geerlingguy.git
+    - role: geerlingguy.java
+    - role: geerlingguy.nodejs
+    - role: geerlingguy.docker
+  tasks:
+  - name: install gui
+    apt:
+      name:
+        - lightdm
+        - lightdm-gtk-greeter
+        - lubuntu-default-settings
+        - lxappearance
+        - lxterminal
+      state: present
+  post_tasks:
+  - name: Clean
+    apt: autoremove=yes autoclean=yes
