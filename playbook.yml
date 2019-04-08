@@ -2,23 +2,27 @@
 - hosts: all
   become: true
   pre_tasks:
-    - name: Updates
-      apt: upgrade=yes update_cache=yes cache_valid_time=86400 # a day
+    - name: Dist update
+      apt: upgrade=dist update_cache=yes cache_valid_time=86400 # a day
+    - name: Package update
+      apt: upgrade=full update_cache=yes cache_valid_time=86400
   roles:
     - role: geerlingguy.git
     - role: geerlingguy.java
     - role: geerlingguy.nodejs
+    - role: geerlingguy.pip
     - role: geerlingguy.docker
   tasks:
-  - name: install gui
+  - name: Install desktop
     apt:
       name:
+        - mate-desktop-environment-extras
         - lightdm
-        - lightdm-gtk-greeter
-        - lubuntu-default-settings
-        - lxappearance
-        - lxterminal
       state: present
+  - name: Configure desktop
+    shell: "dpkg-reconfigure lightdm"
+  - name: Configure autologin
+    shell: "echo '[SeatDefaults]\ngreeter-session=lightdm-gtk-greeter\nautologin-user=vagrant' > /usr/share/lightdm/lightdm.conf.d/60-lightdm-gtk-greeter.conf"
   post_tasks:
   - name: Clean
     apt: autoremove=yes autoclean=yes

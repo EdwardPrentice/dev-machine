@@ -19,7 +19,8 @@ Dev Machine makes no use of any 'pre baked' artifacts (like a published vagrant 
 Dev Machine is completely customisable, simply modify the tooling as you wish before running `vagrant up`
 
 ### Contributions welcome
-Issues are welcome, but PRs are much more welcome!
+Issues are welcome, but PRs are much more welcome! No contribution is too small.
+
 Geography allowing, all PRs earn the author a free 🍺
 
 <br>

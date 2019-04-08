@@ -1,4 +1,5 @@
-# Install required plugins
+# Invoke some automatic plugin installation magic
+# https://gist.github.com/EdwardPrentice/40d630d9776a270f19dfe93b427f1158
 if ARGV[0] != 'plugin'
   required_plugins = ['vagrant-vbguest', 'vagrant-reload']         
   plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin? plugin }
@@ -14,9 +15,6 @@ end
 
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/bionic64"
-
-  # vagrant plugin install vagrant-vbguest # TODO install this if not present
-  # vagrant plugin install vagrant-reload # TODO install this if not present
 
   config.vm.provider "virtualbox" do |vb|
   	vb.gui = true
@@ -46,10 +44,11 @@ Vagrant.configure("2") do |config|
     ansible.galaxy_role_file = "requirements.yml"
   end
 
-  # TODO enable auto login for the vagrant user
   # TODO disable sleep and screensaver timeouts
+  # TODO enable wobbly windows with compiz
+  # TODO enable some kind of dark theme inc. some cool wallpaper
   # TODO other misc desktop config
 
-  # restart the vm to start the gui
+  # Restart the vm to start the gui
   config.vm.provision :reload
 end
