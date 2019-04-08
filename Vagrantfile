@@ -22,8 +22,7 @@ Vagrant.configure("2") do |config|
     vb.cpus = 2
     vb.customize ['modifyvm', :id, '--clipboard', 'bidirectional']
 
-    ## TODO start the window at a reasonable size and resolution
-    ## can't get these to work
+    ## TODO start the window at a reasonable size and resolution - can't get these to work
     #vb.customize 'post-boot', ["controlvm", :id, "setvideomodehint", "1440", "900", "32"]
     #vb.customize 'post-boot', ["controlvm", :id, "setscreenlayout", "1", "primary", "20", "20", "1440", "900", "32"]
   end
@@ -43,11 +42,6 @@ Vagrant.configure("2") do |config|
     ansible.playbook = "playbook.yml"
     ansible.galaxy_role_file = "requirements.yml"
   end
-
-  # TODO disable sleep and screensaver timeouts
-  # TODO enable wobbly windows with compiz
-  # TODO enable some kind of dark theme inc. some cool wallpaper
-  # TODO other misc desktop config
 
   # Restart the vm to start the gui
   config.vm.provision :reload

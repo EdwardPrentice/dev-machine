@@ -20,9 +20,24 @@
         - lightdm
       state: present
   - name: Configure desktop
-    shell: "dpkg-reconfigure lightdm"
+    shell: dpkg-reconfigure lightdm
   - name: Configure autologin
-    shell: "echo '[SeatDefaults]\ngreeter-session=lightdm-gtk-greeter\nautologin-user=vagrant' > /usr/share/lightdm/lightdm.conf.d/60-lightdm-gtk-greeter.conf"
+    blockinfile:
+      path: /usr/share/lightdm/lightdm.conf.d/60-lightdm-gtk-greeter.conf
+      create: yes
+      block: |
+        [SeatDefaults]
+        greeter-session=lightdm-gtk-greeter
+        autologin-user=vagrant
+  - name: Disable lock screen
+    shell: |
+      gsettings set org.gnome.desktop.session idle-delay 0
+      gsettings set org.mate.screensaver lock-enabled false
+  - name: Copy wallpaper # https://www.reddit.com/r/wallpaper/comments/b2vuhx/sr71_blackbird_19201080/eivjsti/
+    copy: src=wallpaper.jpg dest=/home/vagrant/.wallpaper.jpg
+  - name: Set wallpaper
+    become: vagrant
+    shell: gsettings set org.mate.background picture-filename /home/vagrant/.wallpaper.jpg
   post_tasks:
   - name: Clean
     apt: autoremove=yes autoclean=yes

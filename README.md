@@ -18,6 +18,13 @@ Dev Machine makes no use of any 'pre baked' artifacts (like a published vagrant 
 ### Customisable
 Dev Machine is completely customisable, simply modify the tooling as you wish before running `vagrant up`
 
+### TODO
+- Figure out how to start the GUI window bigger than a letter box by default
+- Enable wobbly windows with compiz. Demonstrates advanced customisation.
+- Configure desktop theme to be a really cool dark theme
+- Consider adding some of the kali tools
+- Add and configure IntelliJ Community and a couple of other tools like Sublime, jq, etc
+
 ### Contributions welcome
 Issues are welcome, but PRs are much more welcome! No contribution is too small.
 
