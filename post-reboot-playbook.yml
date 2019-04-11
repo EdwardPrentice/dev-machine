@@ -1,0 +1,12 @@
+---
+- hosts: all
+  become: true
+  vars:
+    user: vagrant
+  tasks:
+  - name: Gsettings configuration
+    become: "{{ user }}"
+    shell: |
+      gsettings set org.gnome.desktop.session idle-delay 0
+      gsettings set org.mate.screensaver lock-enabled false
+      gsettings set org.mate.background picture-filename /home/{{ user }}/.wallpaper.jpg

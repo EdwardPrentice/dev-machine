@@ -39,10 +39,15 @@ Vagrant.configure("2") do |config|
 
   # Use ansible to configure some useful tools into our development machine
   config.vm.provision "ansible_local" do |ansible|
-    ansible.playbook = "playbook.yml"
+    ansible.playbook = "pre-reboot-playbook.yml"
     ansible.galaxy_role_file = "requirements.yml"
   end
 
-  # Restart the vm to start the gui
+  # Restart the vm allow additional config once the the desktop environment has started
+  # TODO is there a way to do all the config pre-reboot?
   config.vm.provision :reload
+
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.playbook = "post-reboot-playbook.yml"
+  end
 end

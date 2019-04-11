@@ -1,6 +1,8 @@
 ---
 - hosts: all
   become: true
+  vars:
+    user: vagrant
   pre_tasks:
     - name: Dist update
       apt: upgrade=dist update_cache=yes cache_valid_time=86400 # a day
@@ -28,16 +30,9 @@
       block: |
         [SeatDefaults]
         greeter-session=lightdm-gtk-greeter
-        autologin-user=vagrant
-  - name: Disable lock screen
-    shell: |
-      gsettings set org.gnome.desktop.session idle-delay 0
-      gsettings set org.mate.screensaver lock-enabled false
+        autologin-user={{ user }}
   - name: Copy wallpaper # https://www.reddit.com/r/wallpaper/comments/b2vuhx/sr71_blackbird_19201080/eivjsti/
-    copy: src=wallpaper.jpg dest=/home/vagrant/.wallpaper.jpg
-  - name: Set wallpaper
-    become: vagrant
-    shell: gsettings set org.mate.background picture-filename /home/vagrant/.wallpaper.jpg
+    copy: src=wallpaper.jpg dest=/home/{{ user }}/.wallpaper.jpg
   post_tasks:
   - name: Clean
     apt: autoremove=yes autoclean=yes
