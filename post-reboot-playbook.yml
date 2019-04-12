@@ -10,3 +10,24 @@
       gsettings set org.mate.session logout-timeout 0
       gsettings set org.mate.screensaver lock-enabled false
       gsettings set org.mate.background picture-filename /home/{{ user }}/.wallpaper.jpg
+  - name: Set some nicer terminal defaults
+    # TODO install and use a nicer font
+    become: "{{ user }}"
+    shell: |
+      dconf write /org/mate/terminal/profiles/default/use-custom-default-size true
+      dconf write /org/mate/terminal/profiles/default/default-size-columns 168
+      dconf write /org/mate/terminal/profiles/default/default-size-rows 44
+      dconf write /org/mate/terminal/profiles/default/use-system-font false
+      dconf write /org/mate/terminal/profiles/default/font "'Monospace 10'"
+      dconf write /org/mate/terminal/profiles/default/use-theme-colors false
+      dconf write /org/mate/terminal/profiles/default/background-color "'#000000000000'"
+      dconf write /org/mate/terminal/profiles/default/foreground-color "'#FFFFFFFFFFFF'"
+      dconf write /org/mate/terminal/profiles/default/background-type "'transparent'"
+      dconf write /org/mate/terminal/profiles/default/background-darkness 0.7
+  - name: Some desktop configuration
+    become: "{{ user }}"
+    shell: |
+      dconf write /org/mate/desktop/background/show-desktop-icons true
+      dconf write /org/mate/caja/desktop/computer-icon-visible true
+      dconf write /org/mate/caja/desktop/home-icon-visible true
+      dconf write /org/mate/caja/desktop/volumes-visible false
