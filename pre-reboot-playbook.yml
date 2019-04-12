@@ -33,6 +33,38 @@
         autologin-user={{ user }}
   - name: Copy wallpaper # https://www.reddit.com/r/wallpaper/comments/b2vuhx/sr71_blackbird_19201080/eivjsti/
     copy: src=wallpaper.jpg dest=/home/{{ user }}/.wallpaper.jpg
+  - name: Install conky
+    apt:
+      name:
+        - conky
+        - hwinfo
+      state: present
+  - name: Install conkyrc
+    copy: src=conkyrc dest=/home/{{ user }}/.conkyrc
+  - name: Create a config dir
+    file: path=/home/{{ user }}/.config state=directory owner={{ user }} group={{ user }}
+  - name: Setup conky # TODO improve this to a much cooler conky
+    # eg. https://www.linuxbabe.com/ubuntu/install-conky-manager-ubuntu-16-04-17-04
+    blockinfile:
+      path: /home/{{ user }}/.config/autostart/conky.desktop
+      create: yes
+      block: |
+        [Desktop Entry]
+        Name=Conky
+        Type=Application
+        Exec=/usr/bin/conky -p 2
+        X-GNOME-Autostart-enabled=true
+  - name: Create a directory needed by conky
+    # https://unix.stackexchange.com/questions/337175/ubuntu-mate-caja-settings-need-read-and-write-options
+    file: path=/home/{{ user }}/.config/caja state=directory owner={{ user }} group={{ user }}
+  # - name: Install dynamic redshift style wall paper
+  #   apt:
+  #     name:
+  #       - redshift
+  #       - redshift-gtk
+  #       - geoclue-2.0 # TODO configure a triad of images and enable some beautiful day/night wallpapers
+  #       # eg. https://www.reddit.com/r/unixporn/comments/8dq6we/gnome_i_made_a_script_to_switch_my_wallpapers
+  #   state: present
   post_tasks:
   - name: Clean
     apt: autoremove=yes autoclean=yes
