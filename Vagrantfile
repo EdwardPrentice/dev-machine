@@ -67,5 +67,15 @@ Vagrant.configure("2") do |config|
   # Until this Vagrantfile can make the virtual box window larger, you should now make the desktop
   # window a reasonable size and run `vagrant reload` again for it to reload the desktop and conky
   # all at a decent size and resolution.
+  config.vm.post_up_message = %(
+    ========================================================================
+                                CONGRATULATIONS
+
+    Now resize the desktop window
+    We suggest making it reasonably large, or fullscreen on a second monitor
+    Then run `vagrant reload` for it to redraw the desktop nicely
+
+    P.S We'd love to automate this step away! Please help us do so if you can
+  )
 
 end
