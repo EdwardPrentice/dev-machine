@@ -25,6 +25,7 @@ Dev Machine is completely customisable, simply modify the tooling as you wish be
 - Configure desktop theme to be a really cool dark theme
 - Consider adding some of the kali tools
 - Add and configure IntelliJ Community and a couple of other tools like Sublime, jq, etc
+- Click and Drag Terminal creation [which looks awesome.](https://www.reddit.com/r/unixporn/comments/7ryji3/bspwm_switching_from_herbstluftwm/)
 
 ### Contributions welcome
 Issues are welcome, but PRs are much more welcome! No contribution is too small.
