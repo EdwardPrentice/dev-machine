@@ -26,11 +26,6 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--vram", "128"]
     vb.customize ["modifyvm", :id, "--hwvirtex", "on"]
     vb.customize ['modifyvm', :id, '--clipboard', 'bidirectional']
-
-    # We want to boot into full screen mode so the desktop renders nicely
-    # TODO how to make this work? Does this need to be a terminal command to vbox?
-    # vb.customize 'post-boot', ["controlvm", :id, "setvideomodehint", "2560", "1440", "32"]
-    # vb.customize 'post-boot', ["controlvm", :id, "setscreenlayout", "1", "primary", "20", "20", "1440", "900", "32"]
   end
 
   # If we have one, share our .bashrc into the host
@@ -50,23 +45,13 @@ Vagrant.configure("2") do |config|
   end
 
   # Restart the vm allow additional config once the the desktop environment has started
-  # TODO is there a way to do all the config pre-reboot?
   config.vm.provision :reload
-
-  # Now we want to boot into full screen mode so the desktop renders nicely
-  # TODO how to make this work? Does this need to be a terminal command to vbox?
-  # config.vm.provider "virtualbox" do |vb|
-  #   vb.customize 'post-boot', ['controlvm', :id, "setvideomodehint", "2560", "1440", "32"]
-  # end
 
   # Can be run on it's own with `vagrant up --provision-with post`
   config.vm.provision "post", type: :ansible_local do |ansible|
     ansible.playbook = "post-reboot-playbook.yml"
   end
 
-  # Until this Vagrantfile can make the virtual box window larger, you should now make the desktop
-  # window a reasonable size and run `vagrant reload` again for it to reload the desktop and conky
-  # all at a decent size and resolution.
   config.vm.post_up_message = %(
     ========================================================================
                                 CONGRATULATIONS
@@ -75,7 +60,6 @@ Vagrant.configure("2") do |config|
     We suggest making it reasonably large, or fullscreen on a second monitor
     Then run `vagrant reload` for it to redraw the desktop nicely
 
-    P.S We'd love to automate this step away! Please help us do so if you can
   )
 
 end

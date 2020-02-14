@@ -17,7 +17,7 @@
   tasks:
   - name: Install desktop
     apt:
-      name: [mate-desktop-environment-extras, lightdm]
+      name: [xubuntu-desktop, lightdm]
       state: present
   - name: Configure desktop
     shell: dpkg-reconfigure lightdm
@@ -29,18 +29,15 @@
         [SeatDefaults]
         greeter-session=lightdm-gtk-greeter
         autologin-user={{ user }}
-  - name: Copy wallpaper # https://www.reddit.com/r/wallpaper/comments/b2vuhx/sr71_blackbird_19201080/eivjsti/
-    copy: src=wallpaper.jpg dest=/home/{{ user }}/.wallpaper.jpg
   - name: Install conky with hwinfo
     apt:
       name: [conky, hwinfo]
       state: present
-  - name: Install conkyrc
-    copy: src=conkyrc dest=/home/{{ user }}/.conkyrc
   - name: Create a config dir
     file: path=/home/{{ user }}/.config state=directory owner={{ user }} group={{ user }}
-  - name: Setup conky # TODO improve this to a much cooler conky
-    # eg. https://www.linuxbabe.com/ubuntu/install-conky-manager-ubuntu-16-04-17-04
+  - name: Install conkyrc
+    copy: src=conky dest=/home/{{ user }}/.config owner={{ user }} group={{ user }}
+  - name: Setup conky
     blockinfile:
       path: /home/{{ user }}/.config/autostart/conky.desktop
       create: yes
@@ -48,11 +45,74 @@
         [Desktop Entry]
         Name=Conky
         Type=Application
-        Exec=/usr/bin/conky -p 2
+        Exec=conky -c /home/{{ user }}/.config/conky/informant/inf-paper.conkyrc
         X-GNOME-Autostart-enabled=true
-  - name: Create a directory needed by conky
-    # https://unix.stackexchange.com/questions/337175/ubuntu-mate-caja-settings-need-read-and-write-options
-    file: path=/home/{{ user }}/.config/caja state=directory owner={{ user }} group={{ user }}
+  - name: Create a utility dir
+    file: path=/home/{{ user }}/.utility state=directory owner={{ user }} group={{ user }}
+  - name: clone xeventbind (required for conky restart on resolution change)
+    git: repo="https://github.com/ritave/xeventbind.git" dest="/home/{{ user }}/.utility/xeventbind" version=master
+  - name: make xeventbind
+    make:
+      chdir: /home/{{ user }}/.utility/xeventbind
+      file: /home/{{ user }}/.utility/xeventbind/Makefile
+  - name: Restart conky on resolution change
+    blockinfile:
+      path: /home/{{ user }}/.config/autostart/restartconky.desktop
+      create: yes
+      block: |
+        [Desktop Entry]
+        Encoding=UTF-8
+        Version=0.9.4
+        Type=Application
+        Name=restartconky
+        Comment=
+        Exec=/home/{{ user }}/.utility/xeventbind/xeventbind resolution "/home/{{ user }}/.utility/restart_conky.sh"
+        OnlyShowIn=XFCE;
+        StartupNotify=false
+        Terminal=false
+        Hidden=false
+  - name: copy over restart conky script
+    copy: src=restart_conky.sh dest=/home/{{ user }}/.utility owner={{ user }} group={{ user }} mode="u=rwx,g=r,o=r"
+  - name: Create a terminal dir
+    file: path=/home/{{ user }}/.config/xfce4/terminal state=directory owner={{ user }} group={{ user }}
+  - name: Config XFCE4 terminal
+    copy: src=terminalrc dest=/home/{{ user }}/.config/xfce4/terminal/terminalrc
+  - name: install Tint2
+    apt:
+      name: [tint2]
+      state: present
+  - name: Disable XFCE panel
+    blockinfile:
+      path: /home/{{ user }}/.config/autostart/XFCEkill.desktop
+      create: yes
+      block: |
+        [Desktop Entry]
+        Encoding=UTF-8
+        Version=0.9.4
+        Type=Application
+        Name=XFCE Panel killer
+        Comment=
+        Exec=killall xfce4-panel
+        OnlyShowIn=XFCE;
+        StartupNotify=false
+        Terminal=false
+        Hidden=false
+  - name: Setup Tint2
+    blockinfile:
+      path: /home/{{ user }}/.config/autostart/tint2.desktop
+      create: yes
+      block: |
+        [Desktop Entry]
+        Encoding=UTF-8
+        Version=0.9.4
+        Type=Application
+        Name=tint2
+        Comment=
+        Exec=tint2 -c /home/{{ user }}/.config/tint2/launchy/launchy.tint2rc
+        OnlyShowIn=XFCE;
+        StartupNotify=false
+        Terminal=false
+        Hidden=false
   # - name: Install dynamic redshift style wall paper
   #   apt:
   #     name:
@@ -61,8 +121,43 @@
   #       - geoclue-2.0 # TODO configure a triad of images and enable some beautiful day/night wallpapers
   #       # eg. https://www.reddit.com/r/unixporn/comments/8dq6we/gnome_i_made_a_script_to_switch_my_wallpapers
   #   state: present
-  - name: Install neofetch for /r/unixporn
-    apt: name=neofetch state=present
-  post_tasks:
+  - name: copy over Tint2 theme
+    copy: src="launchy" dest="/home/{{ user }}/.config/tint2" owner={{ user }} group={{ user}}
+  - name: edit Tint2 theme to match new user
+    command: sed -i 's/addy/{{ user }}/g' /home/{{ user }}/.config/tint2/launchy/launchy.tint2rc 
+  - name: Add Rofi repository
+    apt_repository:
+      repo: ppa:jasonpleau/rofi
+  - name: Install Rofi
+    apt:
+      name: [rofi]
+      state: present
+  - name: make bin dir
+    file: path=/home/{{ user }}/bin state=directory owner={{ user }} group={{ user }}
+  - name: Config Rofi
+    copy: src=dotfiles/rofi-apps dest=/home/{{ user }}/bin/rofi-apps owner={{ user }} group={{ user }} mode="u=rx"
+  - name: Install neofetch
+    apt: 
+      name: [neofetch]
+      state: present
+  - name: clone WM theme
+    git: repo="https://github.com/addy-dclxvi/xfwm4-theme-collections.git" dest="/home/{{ user }}/.themes" version=master
+  - name: clone GTK theme
+    git: repo="https://github.com/addy-dclxvi/gtk-theme-collections.git" dest="/home/{{ user }}/.temp" version=master
+  - name: Move GTK files to .theme
+    shell: |
+      rm -rf /home/{{ user }}/.temp/.git
+      mv /home/{{ user }}/.temp/* /home/{{ user }}/.themes
+      rm -rf /home/{{ user }}/.temp
+  - name: remove .git from .themes to allow cloning again
+    file: path=/home/{{ user }}/.themes/.git state=absent
+  - name: copy over background picture
+    copy: src=wallpaper.jpg dest=/usr/share/backgrounds/bgimage.jpg
+  - name: Disable xScreenSaver
+    blockinfile:
+      path: /home/{{ user }}/.xscreensaver
+      create: yes
+      block: |
+        "mode: off"
   - name: Clean
     apt: autoremove=yes autoclean=yes

@@ -4,30 +4,71 @@
   vars:
     user: vagrant
   tasks:
-  - name: Gsettings configuration
+  - name: Disable icons on desktop
+    environment:
+      DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
     become: "{{ user }}"
-    shell: |
-      gsettings set org.mate.session logout-timeout 0
-      gsettings set org.mate.screensaver lock-enabled false
-      gsettings set org.mate.background picture-filename /home/{{ user }}/.wallpaper.jpg
-  - name: Set some nicer terminal defaults
-    # TODO install and use a nicer font
+    xfconf:
+      channel: "xfce4-desktop"
+      property: "/desktop-icons/style"
+      value_type: "int"
+      value: "0"
+  - name: Disable screensaver
+    environment:
+      DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
     become: "{{ user }}"
-    shell: |
-      dconf write /org/mate/terminal/profiles/default/use-custom-default-size true
-      dconf write /org/mate/terminal/profiles/default/default-size-columns 168
-      dconf write /org/mate/terminal/profiles/default/default-size-rows 44
-      dconf write /org/mate/terminal/profiles/default/use-system-font false
-      dconf write /org/mate/terminal/profiles/default/font "'Monospace 10'"
-      dconf write /org/mate/terminal/profiles/default/use-theme-colors false
-      dconf write /org/mate/terminal/profiles/default/background-color "'#000000000000'"
-      dconf write /org/mate/terminal/profiles/default/foreground-color "'#FFFFFFFFFFFF'"
-      dconf write /org/mate/terminal/profiles/default/background-type "'transparent'"
-      dconf write /org/mate/terminal/profiles/default/background-darkness 0.7
-  - name: Some desktop configuration
+    xfconf:
+      channel: "xfce4-power-manager"
+      property: "/xfce4-power-manager/dpms-enabled"
+      value_type: "bool"
+      value: "false"
+  - name: Never blank on AC
+    environment:
+      DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
     become: "{{ user }}"
-    shell: |
-      dconf write /org/mate/desktop/background/show-desktop-icons true
-      dconf write /org/mate/caja/desktop/computer-icon-visible true
-      dconf write /org/mate/caja/desktop/home-icon-visible true
-      dconf write /org/mate/caja/desktop/volumes-visible false
+    xfconf:
+      channel: "xfce4-power-manager"
+      property: "/xfce4-power-manager/blank-on-ac"
+      value_type: "int"
+      value: "0"
+  - name: Never blank on battery
+    environment:
+      DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+    become: "{{ user }}"
+    xfconf:
+      channel: "xfce4-power-manager"
+      property: "/xfce4-power-manager/blank-on-battery"
+      value_type: "int"
+      value: "0"
+  - name: set WM theme
+    environment:
+      DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+    become: "{{ user }}"
+    xfconf:
+      channel: "xfwm4"
+      property: "/general/theme"
+      value_type: "string"
+      value: "Circela"
+  - name: set GTK theme
+    environment:
+      DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+    become: "{{ user }}"
+    xfconf:
+      channel: "xsettings"
+      property: "/Net/ThemeName"
+      value_type: "string"
+      value: "Fantome"
+  - name: set BG image
+    environment:
+      DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+    become: "{{ user }}"
+    xfconf:
+      channel: "xfce4-desktop"
+      property: "/backdrop/screen0/monitor0/workspace0/last-image"
+      value_type: "string"
+      value: "/usr/share/backgrounds/bgimage.jpg"
+  - name: disable xScreenSaver
+    lineinfile:
+      path: /home/{{ user }}/.xscreensaver
+      regexp: '^mode:'
+      line: "mode: off"
