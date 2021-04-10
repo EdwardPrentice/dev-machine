@@ -1,0 +1,6 @@
+---
+
+- src: geerlingguy.java
+- src: geerlingguy.nodejs
+- src: geerlingguy.pip
+- src: geerlingguy.docker

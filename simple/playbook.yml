@@ -1,0 +1,18 @@
+---
+- hosts: all
+  become: true
+  vars:
+    user: vagrant
+  pre_tasks:
+    - name: Dist update
+      apt: upgrade=dist update_cache=yes cache_valid_time=86400 # a day
+    - name: Package update
+      apt: upgrade=full update_cache=yes cache_valid_time=86400
+  roles:
+      #    - role: geerlingguy.java
+      #    - role: geerlingguy.nodejs
+    - role: geerlingguy.pip
+    - role: geerlingguy.docker
+  tasks:
+    - name: Clean
+      apt: autoremove=yes autoclean=yes

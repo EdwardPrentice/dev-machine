@@ -1,0 +1,86 @@
+# Invoke some automatic plugin installation magic
+# https://gist.github.com/EdwardPrentice/40d630d9776a270f19dfe93b427f1158
+if ARGV[0] != 'plugin'
+  required_plugins = ['vagrant-vbguest', 'vagrant-reload']         
+  plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin? plugin }
+  if not plugins_to_install.empty?
+    puts "Installing plugins: #{plugins_to_install.join(' ')}"
+    if system "vagrant plugin install #{plugins_to_install.join(' ')}"
+      exec "vagrant #{ARGV.join(' ')}"
+    else
+      abort "Installation of one or more plugins has failed. Aborting."
+    end
+  end
+end
+
+Vagrant.configure("2") do |config|
+  #config.vm.box = "ubuntu/bionic64"
+  #config.vm.box = "ubuntu/eoan64"
+  config.vm.box = "ubuntu/focal64" #20.04
+
+  config.disksize.size = '10GB'
+  
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = false
+    vb.memory = 2048
+    vb.cpus = 2
+  end
+
+  # Mount in the project directory into /vagrant
+  config.vm.synced_folder ".", "/vagrant"
+
+  # If we have one, share our .bashrc into the host
+  # This is effectively a copy operation, allowing the guest to change its own bashrc
+  if File.exist?("#{Dir.home}/.bashrc")
+    config.vm.provision "file", source: "#{Dir.home}/.bashrc", destination: ".bashrc"
+  end
+
+  # If we have some, share our dotfiles into the host
+  # This is a read only mount to avoid a guest changing the dotfiles directly. Any changes should be made on the host
+  # in order to be effectively managed and version controlled
+  if File.exist?("#{Dir.home}/dotfiles")
+    config.vm.synced_folder "#{Dir.home}/dotfiles", "/home/vagrant/dotfiles", mount_options: ["ro"]
+  end
+
+  # If we have one, share our ssh key into the host
+  # WARNING: Don't share your private key into your VM if you think you'll have malware inside it
+  if File.exist?("#{Dir.home}/.ssh")
+    ssh_prv_key = File.read("#{Dir.home}/.ssh/id_rsa")
+    ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_rsa.pub").first.strip
+    config.vm.provision "shell", inline: <<-SHELL
+    mkdir -p .ssh
+    if [ ! -f /home/vagrant/.ssh/id_rsa ]; then
+      echo '#{ssh_prv_key}' > /home/vagrant/.ssh/id_rsa
+      echo '#{ssh_pub_key}' > /home/vagrant/.ssh/id_rsa.pub
+      chmod 600 /home/vagrant/.ssh/id_rsa
+      chown -R vagrant:vagrant /home/vagrant/.ssh/
+    fi
+      SHELL
+  end
+
+  if File.exist?("#{Dir.home}/.gitconfig")
+    config.vm.provision "file", source: "#{Dir.home}/.gitconfig", destination: ".gitconfig"
+  end
+
+  # required after bionic64 as Vagrant can no longer install ansible correctly
+  config.vm.provision :shell, inline: "apt-get update && apt-get install -qy ansible"
+
+
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.playbook = "playbook.yml"
+    ansible.galaxy_role_file = "requirements.yml"
+    ansible.compatibility_mode = "2.0"
+  end
+
+  # Add additional tools and config
+  config.vm.provision "shell", inline: <<-SHELL
+    # enable docker without sudo
+    sudo gpasswd -a vagrant docker && newgrp docker
+    sudo apt-get install -y neofetch unzip
+    pip3 install pre-commit
+    pip3 install awscli --upgrade
+    pip3 install aws-google-auth
+    zcat <(curl -s 'https://releases.hashicorp.com/terraform/0.11.11/terraform_0.11.11_linux_amd64.zip') | sudo tee /usr/bin/terraform > /dev/null && sudo chmod +x /usr/bin/terraform
+  SHELL
+
+end
